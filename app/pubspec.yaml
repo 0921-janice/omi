@@ -75,12 +75,12 @@ dependencies:
   envied: 1.1.1
   awesome_notifications_core: ^0.9.3
   awesome_notifications: any
-  instabug_flutter: ^14.3.1
+  instabug_flutter: ^16.0.3
   nordic_dfu: ^6.1.4+hotfix
   mcumgr_flutter: ^0.4.2
   flutter_archive: ^6.0.3
   json_annotation: ^4.9.0
-  json_serializable: 6.8.0
+  json_serializable: ^6.9.5
   package_info_plus: ^8.0.1
   path_provider: 2.1.5
   flutter_foreground_task: 9.1.0
