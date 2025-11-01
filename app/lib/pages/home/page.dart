@@ -441,6 +441,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                                               MixpanelManager().bottomNavigationTabClicked('Home');
                                               primaryFocus?.unfocus();
                                               if (home.selectedIndex == 0) {
+                                                home.triggerScrollToTop(0);
                                                 return;
                                               }
                                               home.setIndex(0);
@@ -473,6 +474,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                                               MixpanelManager().bottomNavigationTabClicked('Action Items');
                                               primaryFocus?.unfocus();
                                               if (home.selectedIndex == 1) {
+                                                home.triggerScrollToTop(1);
                                                 return;
                                               }
                                               home.setIndex(1);
@@ -507,6 +509,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                                               MixpanelManager().bottomNavigationTabClicked('Memories');
                                               primaryFocus?.unfocus();
                                               if (home.selectedIndex == 2) {
+                                                home.triggerScrollToTop(2);
                                                 return;
                                               }
                                               home.setIndex(2);
@@ -539,6 +542,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                                               MixpanelManager().bottomNavigationTabClicked('Explore');
                                               primaryFocus?.unfocus();
                                               if (home.selectedIndex == 3) {
+                                                home.triggerScrollToTop(3);
                                                 return;
                                               }
                                               home.setIndex(3);
