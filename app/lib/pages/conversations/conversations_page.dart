@@ -6,6 +6,7 @@ import 'package:omi/pages/conversations/widgets/search_result_header_widget.dart
 import 'package:omi/pages/conversations/widgets/search_widget.dart';
 import 'package:omi/providers/capture_provider.dart';
 import 'package:omi/providers/conversation_provider.dart';
+import 'package:omi/providers/home_provider.dart';
 import 'package:omi/utils/ui_guidelines.dart';
 import 'package:omi/widgets/custom_refresh_indicator.dart';
 import 'package:provider/provider.dart';
@@ -24,18 +25,41 @@ class ConversationsPage extends StatefulWidget {
 
 class _ConversationsPageState extends State<ConversationsPage> with AutomaticKeepAliveClientMixin {
   TextEditingController textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
+    super.initState();
+    // Register scroll-to-top callback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<HomeProvider>().scrollToTopConversations = _scrollToTop;
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (Provider.of<ConversationProvider>(context, listen: false).conversations.isEmpty) {
         await Provider.of<ConversationProvider>(context, listen: false).getInitialConversations();
       }
     });
-    super.initState();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Widget _buildConversationShimmer() {
@@ -119,6 +143,7 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
           return;
         },
         child: CustomScrollView(
+          controller: _scrollController,
           slivers: [
             // const SliverToBoxAdapter(child: SizedBox(height: 16)), // above capture widget
             const SliverToBoxAdapter(child: SpeechProfileCardWidget()),

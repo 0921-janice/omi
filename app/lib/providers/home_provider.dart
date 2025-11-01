@@ -9,6 +9,10 @@ import 'package:omi/utils/analytics/analytics_manager.dart';
 class HomeProvider extends ChangeNotifier {
   int selectedIndex = 0;
   Function(int idx)? onSelectedIndexChanged;
+  VoidCallback? scrollToTopConversations;
+  VoidCallback? scrollToTopActionItems;
+  VoidCallback? scrollToTopMemories;
+  VoidCallback? scrollToTopApps;
   final FocusNode chatFieldFocusNode = FocusNode();
   final FocusNode appsSearchFieldFocusNode = FocusNode();
   final FocusNode convoSearchFieldFocusNode = FocusNode();
@@ -176,6 +180,23 @@ class HomeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void triggerScrollToTop(int index) {
+    switch (index) {
+      case 0:
+        scrollToTopConversations?.call();
+        break;
+      case 1:
+        scrollToTopActionItems?.call();
+        break;
+      case 2:
+        scrollToTopMemories?.call();
+        break;
+      case 3:
+        scrollToTopApps?.call();
+        break;
+    }
+  }
+
   @override
   void dispose() {
     chatFieldFocusNode.removeListener(_onFocusChange);
@@ -187,6 +208,10 @@ class HomeProvider extends ChangeNotifier {
     appsSearchFieldFocusNode.dispose();
     convoSearchFieldFocusNode.dispose();
     onSelectedIndexChanged = null;
+    scrollToTopConversations = null;
+    scrollToTopActionItems = null;
+    scrollToTopMemories = null;
+    scrollToTopApps = null;
     super.dispose();
   }
 }

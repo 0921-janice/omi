@@ -156,6 +156,12 @@ class MemoriesPageState extends State<MemoriesPage> with AutomaticKeepAliveClien
   @override
   void initState() {
     super.initState();
+    // Register scroll-to-top callback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<HomeProvider>().scrollToTopMemories = _scrollToTop;
+      }
+    });
     // Set default filter based on current date
     final now = DateTime.now();
     final cutoffDate = DateTime(2025, 5, 31);
@@ -180,6 +186,16 @@ class MemoriesPageState extends State<MemoriesPage> with AutomaticKeepAliveClien
         _showReviewSheet(context, unreviewedMemories, provider);
       }
     }).withPostFrameCallback();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void _applyFilter(FilterOption option) {

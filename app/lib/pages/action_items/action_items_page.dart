@@ -7,6 +7,7 @@ import 'package:omi/utils/ui_guidelines.dart';
 
 import 'package:omi/backend/schema/schema.dart';
 import 'package:omi/providers/action_items_provider.dart';
+import 'package:omi/providers/home_provider.dart';
 import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/services/apple_reminders_service.dart';
 import 'package:omi/utils/platform/platform_service.dart';
@@ -31,6 +32,12 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    // Register scroll-to-top callback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<HomeProvider>().scrollToTopActionItems = _scrollToTop;
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       MixpanelManager().actionItemsPageOpened();
       final provider = Provider.of<ActionItemsProvider>(context, listen: false);
@@ -39,6 +46,16 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
       }
       _checkExistingAppleReminders();
     });
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
