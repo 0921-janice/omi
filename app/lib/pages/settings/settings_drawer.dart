@@ -15,6 +15,8 @@ import 'package:omi/utils/platform/platform_service.dart';
 import 'package:omi/widgets/dialog.dart';
 import 'package:intercom_flutter/intercom_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
@@ -49,6 +51,8 @@ class SettingsDrawer extends StatefulWidget {
 class _SettingsDrawerState extends State<SettingsDrawer> {
   String? version;
   String? buildVersion;
+  String? deviceDescription; // e.g., "iPhone 14 — iOS 17.2" or "Pixel 8 — Android 14"
+  bool _showCopiedMessage = false;
 
   @override
   void initState() {
@@ -58,6 +62,49 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
       buildVersion = packageInfo.buildNumber.toString();
       setState(() {});
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadDeviceInfo(); 
+  }
+
+@override
+  Future<void> _loadDeviceInfo() async {
+    try {
+      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      final platform = Theme.of(context).platform;
+      print('Platform: $platform');
+      
+      if (platform == TargetPlatform.iOS) {
+        final ios = await deviceInfo.iosInfo;
+        final name = ios.utsname.machine ?? ios.model ?? 'iPhone';
+        final osVersion = ios.systemVersion ?? '';
+        deviceDescription = '$name — iOS $osVersion';
+      } else if (platform == TargetPlatform.android) {
+        final android = await deviceInfo.androidInfo;
+        final model = android.model ?? 'Android Device';
+        final osVersion = android.version.release ?? '';
+        deviceDescription = '$model — Android $osVersion';
+      } else {
+        // Fallback for other platforms
+        deviceDescription = PlatformService.isDesktop ? 'Desktop' : 'Mobile Device';
+      }
+      if (mounted) setState(() {});
+    } catch (e) {
+      deviceDescription = 'Unknown Device';
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _copyTroubleshootingInfo() async {
+    final v = version ?? '';
+    final b = buildVersion ?? '';
+    final d = deviceDescription ?? '';
+    final text = 'Omi App Version: $v ($b)\nDevice: $d';
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
   }
 
   Widget _buildSettingsItem({
@@ -306,14 +353,52 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
           ),
           const SizedBox(height: 32),
 
-          // Version Info
-          Text(
-            '${version ?? ""}${buildVersion != null ? " ($buildVersion)" : ""}',
-            style: const TextStyle(
-              color: Color(0xFF8E8E93),
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-            ),
+          // Version Info with Copy Button
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  _showCopiedMessage
+                    ? 'App and device details copied'
+                    : '${version ?? ""}${buildVersion != null ? " ($buildVersion)" : ""}',
+                  style: const TextStyle(
+                    color: Color(0xFF8E8E93),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (!_showCopiedMessage)
+                InkWell(
+                  onTap: () async {
+                    _copyTroubleshootingInfo();
+
+                    if (!mounted) return;
+                    setState(() {
+                      _showCopiedMessage = true;
+                    });
+
+                    // Hide the message and show the button again after 2 seconds
+                    await Future.delayed(const Duration(seconds: 2));
+                    if (!mounted) return;
+                    setState(() {
+                      _showCopiedMessage = false;
+                    });
+                  },
+              
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 36,
+                  height: 28,
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.copy, size: 16, color: Color(0xFF8E8E93)),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
         ],
